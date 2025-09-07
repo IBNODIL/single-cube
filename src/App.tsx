@@ -55,17 +55,11 @@ function Player() {
     }
 
     // --- Jump logic ---
-    const vel = body.linvel();
     if (keys["Space"] && canJump) {
       impulse.y = 5;
       torque.x += 0.2;
       torque.z += 0.2;
       setCanJump(false); // ⛔ disable jump until landing
-    }
-
-    // detect landing (reset jump)
-    if (!canJump && Math.abs(vel.y) < 0.05) {
-      setCanJump(true);
     }
 
     // Apply impulses
@@ -86,6 +80,12 @@ function Player() {
       lockRotations={true}
       colliders="cuboid"
       position={[0, 2, 0]} // start above ground
+      onCollisionEnter={(e) => {
+        // If touching ground, allow jump again
+        if (e.other.rigidBodyObject?.name === "ground") {
+          setCanJump(true);
+        }
+      }}
     >
       <mesh castShadow>
         <boxGeometry args={[1, 1, 1]} />
@@ -104,9 +104,9 @@ export default function App() {
         <directionalLight position={[5, 10, 5]} intensity={1} castShadow />
 
         <Physics gravity={[0, -10, 0]}>
-          <RigidBody type="fixed">
+          <RigidBody type="fixed" name="ground">
             <mesh position-y={-0.25} receiveShadow>
-              <boxGeometry args={[20, 0.5, 20]} />
+              <boxGeometry args={[50, 0.5, 50]} />
               <meshStandardMaterial color="mediumpurple" />
             </mesh>
           </RigidBody>
